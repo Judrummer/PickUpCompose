@@ -1,35 +1,58 @@
 package com.judrummer.pickupcompose.ui.screen.pickuplist
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import android.Manifest
+import android.annotation.SuppressLint
+import android.graphics.Color
+import android.location.Location
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
+import com.google.accompanist.permissions.*
+import com.google.accompanist.permissions.PermissionRequired
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.google.android.gms.location.LocationServices
+import com.judrummer.pickupcompose.common.util.PickUpLatLng
 import com.judrummer.pickupcompose.ui.theme.PickUpComposeTheme
+import com.karumi.dexter.Dexter
+import com.karumi.dexter.MultiplePermissionsReport
+import com.karumi.dexter.PermissionToken
+import com.karumi.dexter.listener.PermissionRequest
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener
+import com.karumi.dexter.listener.single.PermissionListener
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import org.koin.androidx.compose.getViewModel
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun PickUpListScreen() {
+    val context = LocalContext.current
+    val locationProviderClient = remember(context) {
+        LocationServices.getFusedLocationProviderClient(context)
+    }
+    val coroutineScope = rememberCoroutineScope()
     val viewModel: PickUpListViewModel = getViewModel()
     val state = viewModel.state.observeAsState().value ?: PickUpListViewState()
     val swipeRefreshState = rememberSwipeRefreshState(state.refreshing)
-
     DisposableEffect(Unit) {
         viewModel.initialize()
         onDispose {
@@ -43,6 +66,37 @@ fun PickUpListScreen() {
                 title = {
                     Text(text = "PICK UP")
                 },
+                actions = {
+                    Box(
+                        Modifier
+                            .fillMaxHeight()
+                            .width(48.dp)
+                            .clickable {
+                                Dexter
+                                    .withContext(context)
+                                    .withPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+                                    .withListener(object : MultiplePermissionsListener {
+                                        @SuppressLint("MissingPermission")
+                                        override fun onPermissionsChecked(p0: MultiplePermissionsReport?) {
+                                            if (p0?.areAllPermissionsGranted() == true) {
+                                                coroutineScope.launch {
+                                                    runCatching {
+                                                        val lastLocation = locationProviderClient.lastLocation.await()
+                                                        viewModel.setCurrentLatLng(PickUpLatLng(lastLocation.latitude, lastLocation.longitude))
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        override fun onPermissionRationaleShouldBeShown(p0: MutableList<PermissionRequest>?, p1: PermissionToken?) {
+                                        }
+                                    })
+                                    .check()
+                            },
+                    ) {
+                        Icon(Icons.Rounded.Search, modifier = Modifier.align(Alignment.Center), contentDescription = "Search Location")
+                    }
+                },
                 navigationIcon = null,
                 elevation = 12.dp
             )
@@ -53,7 +107,7 @@ fun PickUpListScreen() {
                     viewModel.onRefresh()
                 },
             ) {
-                BoxWithConstraints(contentAlignment = Alignment.Center) {
+                BoxWithConstraints(modifier = Modifier.background(androidx.compose.ui.graphics.Color.LightGray), contentAlignment = Alignment.Center) {
                     when {
                         state.loading -> {
                             Box(
@@ -73,16 +127,19 @@ fun PickUpListScreen() {
                         }
                         else -> {
                             LazyColumn {
-                                itemsIndexed(state.items) { index, item ->
-                                    Column(
-                                        modifier = Modifier.clickable {
-                                            //TODO: click to navigate?
-                                        },
-                                    ) {
-                                        Text(text = item.id.toString())
-                                        Text(text = item.id.toString())
-                                        Text(text = item.id.toString())
+                                itemsIndexed(state.calculatedItems) { index, item ->
+                                    Card(modifier = Modifier.padding(16.dp), elevation = 8.dp) {
+                                        Column(
+                                            modifier = Modifier
+                                                .padding(16.dp)
+                                                .fillMaxWidth(),
+                                        ) {
+                                            if (item.city.isNotBlank()) Text(text = item.city)
+                                            Text(text = item.name, style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold))
+                                            if (item.address.isNotBlank()) Text(text = item.address)
+                                        }
                                     }
+
                                 }
                             }
                         }
