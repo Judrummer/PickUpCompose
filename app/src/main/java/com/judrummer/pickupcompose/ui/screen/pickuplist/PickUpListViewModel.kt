@@ -48,9 +48,9 @@ class PickUpListViewModel(
         launch {
             try {
                 val items = getActivePickUpLocationsUsecase()
-                setState { copy(refreshing = false, loading = false, items = items) }
+                setState { copy(refreshing = false, loading = false, error = null, items = items) }
             } catch (e: Throwable) {
-                setState { copy(refreshing = false, loading = false, error = e) }
+                setState { copy(refreshing = false, loading = false, error = e, items = emptyList()) }
             }
         }
     }

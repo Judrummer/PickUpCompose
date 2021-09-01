@@ -55,6 +55,7 @@ class PickUpListViewModelTest {
             {
                 copy(
                     loading = false,
+                    error = null,
                     items = items,
                 )
             },
@@ -77,6 +78,7 @@ class PickUpListViewModelTest {
                 copy(
                     loading = false,
                     error = error,
+                    items = emptyList(),
                 )
             },
         )
@@ -107,6 +109,7 @@ class PickUpListViewModelTest {
             {
                 copy(
                     refreshing = false,
+                    error = null,
                     items = items,
                 )
             },

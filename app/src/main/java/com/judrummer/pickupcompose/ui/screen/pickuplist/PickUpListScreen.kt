@@ -16,6 +16,7 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -109,7 +110,7 @@ fun PickUpListScreen() {
                     viewModel.onRefresh()
                 },
             ) {
-                BoxWithConstraints(modifier = Modifier.background(androidx.compose.ui.graphics.Color.LightGray), contentAlignment = Alignment.Center) {
+                BoxWithConstraints(contentAlignment = Alignment.Center) {
                     when {
                         state.loading -> {
                             Box(
@@ -123,6 +124,8 @@ fun PickUpListScreen() {
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .verticalScroll(rememberScrollState())
+                                    .padding(16.dp),
+                                horizontalAlignment = CenterHorizontally,
                             ) {
                                 Text("Fetch Error.\nPull to Refresh Again.")
                             }
