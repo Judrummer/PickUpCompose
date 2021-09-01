@@ -3,7 +3,7 @@ package com.judrummer.pickupcompose.ui.screen.pickuplist
 import com.judrummer.pickupcompose.common.base.StateViewModel
 import kotlinx.coroutines.launch
 
-data class PickUpListView(
+data class PickUpListViewState(
     val loading: Boolean = true,
     val refreshing: Boolean = false,
     val error: Throwable? = null,
@@ -12,7 +12,7 @@ data class PickUpListView(
 
 class PickUpListViewModel(
     private val getActivePickUpLocationsUsecase: GetActivePickUpLocationsUsecase
-) : StateViewModel<PickUpListView>(PickUpListView()) {
+) : StateViewModel<PickUpListViewState>(PickUpListViewState()) {
     override fun onInitialize() {
         setState { copy(loading = true) }
         fetch()

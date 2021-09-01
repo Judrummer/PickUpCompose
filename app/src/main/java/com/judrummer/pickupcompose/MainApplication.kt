@@ -9,6 +9,7 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.features.logging.*
+import io.ktor.http.*
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -20,6 +21,7 @@ class MainApplication : Application() {
         single<HttpClient> {
             HttpClient(OkHttp) {
                 install(JsonFeature) {
+                    accept(ContentType.Text.Html)
                     serializer = KotlinxSerializer(kotlinx.serialization.json.Json {
                         ignoreUnknownKeys = true
                     })
@@ -48,9 +50,9 @@ class MainApplication : Application() {
         startKoin {
             androidLogger()
             androidContext(this@MainApplication)
-            modules(appModule)
             modules(dataModule)
             modules(domainModule)
+            modules(appModule)
         }
     }
 }

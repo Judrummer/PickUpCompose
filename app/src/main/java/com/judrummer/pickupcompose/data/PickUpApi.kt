@@ -1,5 +1,6 @@
 package com.judrummer.pickupcompose.data
 
+import com.judrummer.pickupcompose.BuildConfig
 import io.ktor.client.*
 import io.ktor.client.request.*
 import kotlinx.serialization.Serializable
@@ -163,5 +164,7 @@ interface PickUpApi {
 }
 
 class PickUpApiImpl(private val httpClient: HttpClient) : PickUpApi {
-    override suspend fun getPickUpLocations(): GetPickUpLocationsApiResponseEntity = httpClient.get("https://45434c1b-1e22-4af2-8c9f-c2d99ffa4896.mock.pstmn.io/v3/pickup-locations")
+    override suspend fun getPickUpLocations(): GetPickUpLocationsApiResponseEntity = httpClient.get("https://45434c1b-1e22-4af2-8c9f-c2d99ffa4896.mock.pstmn.io/v3/pickup-locations") {
+        header("x-api-key", BuildConfig.API_KEY)
+    }
 }
