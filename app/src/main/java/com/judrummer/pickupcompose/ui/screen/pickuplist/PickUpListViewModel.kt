@@ -6,7 +6,7 @@ import com.judrummer.pickupcompose.location.distanceMeterTo
 import kotlinx.coroutines.launch
 
 data class PickUpListViewState(
-    val loading: Boolean = true,
+    val loading: Boolean = false,
     val loadingLocation: Boolean = false,
     val refreshing: Boolean = false,
     val error: Throwable? = null,
