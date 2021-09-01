@@ -8,7 +8,7 @@ import org.junit.Assert.*
 import org.junit.Test
 import kotlin.math.roundToInt
 
-class LatLngKtTest {
+class PickUpLatLngKtTest {
 
     @Test
     fun distanceMeterTo() {
