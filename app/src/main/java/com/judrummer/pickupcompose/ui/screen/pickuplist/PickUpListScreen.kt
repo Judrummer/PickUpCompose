@@ -157,7 +157,7 @@ fun PickUpListScreen() {
                                                 .fillMaxWidth(),
                                         ) {
                                             if (item.city.isNotBlank()) Text(text = item.city)
-                                            Text(text = item.name, style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold))
+                                            Text(text = item.name.uppercase(), style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold))
                                             if (item.address.isNotBlank()) Text(text = item.address)
                                         }
                                     }

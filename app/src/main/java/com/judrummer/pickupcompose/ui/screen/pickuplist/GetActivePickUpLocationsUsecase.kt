@@ -4,7 +4,6 @@ import com.judrummer.pickupcompose.common.util.PickUpLatLng
 import com.judrummer.pickupcompose.data.PickUpApi
 
 data class PickUpLocation(
-    val id: Long = 0L,
     val name: String = "",
     val address: String = "",
     val city: String = "",

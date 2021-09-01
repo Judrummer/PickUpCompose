@@ -10,7 +10,6 @@ interface PickUpLocationMapper {
 class PickUpLocationMapperImpl : PickUpLocationMapper {
     override fun invoke(entity: GetPickUpLocationsApiResponseEntity.Pickup): PickUpLocation {
         return PickUpLocation(
-            id = entity.idPickupLocation?.toLong() ?: 0L,
             name = entity.alias.orEmpty(),
             address = entity.address1.orEmpty(),
             city = entity.city.orEmpty(),
