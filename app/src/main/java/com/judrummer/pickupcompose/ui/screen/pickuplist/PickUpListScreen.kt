@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.location.Location
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,11 +12,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -29,6 +27,7 @@ import com.google.accompanist.permissions.*
 import com.google.accompanist.permissions.PermissionRequired
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.judrummer.pickupcompose.common.util.PickUpLatLng
 import com.judrummer.pickupcompose.ui.theme.PickUpComposeTheme
@@ -53,6 +52,8 @@ fun PickUpListScreen() {
     val viewModel: PickUpListViewModel = getViewModel()
     val state = viewModel.state.observeAsState().value ?: PickUpListViewState()
     val swipeRefreshState = rememberSwipeRefreshState(state.refreshing)
+    var locationLoadingState by remember { mutableStateOf(false) }
+
     DisposableEffect(Unit) {
         viewModel.initialize()
         onDispose {
@@ -80,10 +81,19 @@ fun PickUpListScreen() {
                                         override fun onPermissionsChecked(p0: MultiplePermissionsReport?) {
                                             if (p0?.areAllPermissionsGranted() == true) {
                                                 coroutineScope.launch {
+                                                    locationLoadingState = true
                                                     runCatching {
-                                                        val lastLocation = locationProviderClient.lastLocation.await()
-                                                        viewModel.setCurrentLatLng(PickUpLatLng(lastLocation.latitude, lastLocation.longitude))
+                                                        locationProviderClient
+                                                            .getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, null)
+                                                            .await()
+                                                            .run { PickUpLatLng(latitude, longitude) }
+                                                            .also { viewModel.setCurrentLatLng(it) }
+                                                    }.onFailure {
+                                                        Toast
+                                                            .makeText(context, "Get current location error.", Toast.LENGTH_SHORT)
+                                                            .show()
                                                     }
+                                                    locationLoadingState = false
                                                 }
                                             }
                                         }
@@ -94,7 +104,19 @@ fun PickUpListScreen() {
                                     .check()
                             },
                     ) {
-                        Icon(Icons.Rounded.Search, modifier = Modifier.align(Alignment.Center), contentDescription = "Search Location")
+                        val modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(24.dp)
+
+                        if (locationLoadingState) CircularProgressIndicator(
+                            modifier = modifier,
+                            color = androidx.compose.ui.graphics.Color.White,
+                        )
+                        else Icon(
+                            Icons.Rounded.Search,
+                            modifier = modifier,
+                            contentDescription = "Search Location",
+                        )
                     }
                 },
                 navigationIcon = null,
@@ -128,7 +150,7 @@ fun PickUpListScreen() {
                         else -> {
                             LazyColumn {
                                 itemsIndexed(state.calculatedItems) { index, item ->
-                                    Card(modifier = Modifier.padding(16.dp), elevation = 8.dp) {
+                                    Card(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp), elevation = 8.dp) {
                                         Column(
                                             modifier = Modifier
                                                 .padding(16.dp)
