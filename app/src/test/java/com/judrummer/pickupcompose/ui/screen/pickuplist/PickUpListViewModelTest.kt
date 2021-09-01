@@ -15,9 +15,10 @@ class PickUpListViewModelTest {
     val rule = InstantTaskExecutorRule()
 
     val getActivePickUpLocationsUsecase: GetActivePickUpLocationsUsecase = mockk(relaxed = true)
+    val getCurrentLatLngUsecase: GetCurrentLatLngUsecase = mockk(relaxed = true)
     val stateObserver = TestObserver<PickUpListViewState>()
 
-    val viewModel = PickUpListViewModel(getActivePickUpLocationsUsecase)
+    val viewModel = PickUpListViewModel(getActivePickUpLocationsUsecase, getCurrentLatLngUsecase)
 
     @Before
     fun setup() {

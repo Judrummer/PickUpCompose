@@ -1,4 +1,4 @@
-package com.judrummer.pickupcompose.common.util
+package com.judrummer.pickupcompose.location
 
 import kotlin.math.*
 

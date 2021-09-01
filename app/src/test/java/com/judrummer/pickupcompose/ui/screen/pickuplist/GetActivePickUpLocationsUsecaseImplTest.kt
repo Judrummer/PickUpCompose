@@ -1,8 +1,8 @@
 package com.judrummer.pickupcompose.ui.screen.pickuplist
 
-import com.judrummer.pickupcompose.common.util.PickUpLatLng
 import com.judrummer.pickupcompose.data.GetPickUpLocationsApiResponseEntity
 import com.judrummer.pickupcompose.data.PickUpApi
+import com.judrummer.pickupcompose.location.PickUpLatLng
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk

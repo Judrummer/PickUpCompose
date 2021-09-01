@@ -1,7 +1,7 @@
 package com.judrummer.pickupcompose.ui.screen.pickuplist
 
-import com.judrummer.pickupcompose.common.util.PickUpLatLng
 import com.judrummer.pickupcompose.data.PickUpApi
+import com.judrummer.pickupcompose.location.PickUpLatLng
 
 data class PickUpLocation(
     val name: String = "",

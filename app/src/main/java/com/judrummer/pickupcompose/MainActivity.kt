@@ -9,6 +9,7 @@ import com.judrummer.pickupcompose.ui.screen.pickuplist.PickUpListScreen
 import com.judrummer.pickupcompose.ui.theme.PickUpComposeTheme
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {

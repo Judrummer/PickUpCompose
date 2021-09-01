@@ -2,13 +2,14 @@ package com.judrummer.pickupcompose.ui.screen.pickuplist
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.graphics.Color
-import android.location.Location
 import android.widget.Toast
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
@@ -19,24 +20,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberImagePainter
-import com.google.accompanist.permissions.*
-import com.google.accompanist.permissions.PermissionRequired
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import com.judrummer.pickupcompose.common.util.PickUpLatLng
-import com.judrummer.pickupcompose.ui.theme.PickUpComposeTheme
+import com.judrummer.pickupcompose.location.PickUpLatLng
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
-import com.karumi.dexter.listener.single.PermissionListener
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import org.koin.androidx.compose.getViewModel
@@ -45,14 +41,11 @@ import org.koin.androidx.compose.getViewModel
 @Composable
 fun PickUpListScreen() {
     val context = LocalContext.current
-    val locationProviderClient = remember(context) {
-        LocationServices.getFusedLocationProviderClient(context)
-    }
+
     val coroutineScope = rememberCoroutineScope()
     val viewModel: PickUpListViewModel = getViewModel()
     val state = viewModel.state.observeAsState().value ?: PickUpListViewState()
     val swipeRefreshState = rememberSwipeRefreshState(state.refreshing)
-    var locationLoadingState by remember { mutableStateOf(false) }
 
     DisposableEffect(Unit) {
         viewModel.initialize()
@@ -72,6 +65,8 @@ fun PickUpListScreen() {
                             .fillMaxHeight()
                             .width(48.dp)
                             .clickable {
+                                if (state.loadingLocation) return@clickable
+
                                 Dexter
                                     .withContext(context)
                                     .withPermissions(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -79,21 +74,7 @@ fun PickUpListScreen() {
                                         @SuppressLint("MissingPermission")
                                         override fun onPermissionsChecked(p0: MultiplePermissionsReport?) {
                                             if (p0?.areAllPermissionsGranted() == true) {
-                                                coroutineScope.launch {
-                                                    locationLoadingState = true
-                                                    runCatching {
-                                                        locationProviderClient
-                                                            .getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, null)
-                                                            .await()
-                                                            .run { PickUpLatLng(latitude, longitude) }
-                                                            .also { viewModel.setCurrentLatLng(it) }
-                                                    }.onFailure {
-                                                        Toast
-                                                            .makeText(context, "Get current location error.", Toast.LENGTH_SHORT)
-                                                            .show()
-                                                    }
-                                                    locationLoadingState = false
-                                                }
+                                                viewModel.requestLocation()
                                             }
                                         }
 
@@ -107,7 +88,7 @@ fun PickUpListScreen() {
                             .align(Alignment.Center)
                             .size(24.dp)
 
-                        if (locationLoadingState) CircularProgressIndicator(
+                        if (state.loadingLocation) CircularProgressIndicator(
                             modifier = modifier,
                             color = androidx.compose.ui.graphics.Color.White,
                         )
@@ -169,12 +150,4 @@ fun PickUpListScreen() {
             }
         }
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    PickUpComposeTheme {
-        PickUpListScreen()
-    }
 }

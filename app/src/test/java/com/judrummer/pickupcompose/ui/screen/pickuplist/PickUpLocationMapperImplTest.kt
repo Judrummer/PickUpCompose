@@ -1,7 +1,7 @@
 package com.judrummer.pickupcompose.ui.screen.pickuplist
 
-import com.judrummer.pickupcompose.common.util.PickUpLatLng
 import com.judrummer.pickupcompose.data.GetPickUpLocationsApiResponseEntity
+import com.judrummer.pickupcompose.location.PickUpLatLng
 import org.amshove.kluent.shouldBeEqualTo
 import org.junit.Assert.*
 

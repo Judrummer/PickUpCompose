@@ -1,5 +1,7 @@
 package com.judrummer.pickupcompose.common.util
 
+import com.judrummer.pickupcompose.location.PickUpLatLng
+import com.judrummer.pickupcompose.location.distanceMeterTo
 import org.amshove.kluent.shouldBeEqualTo
 import org.junit.Assert.*
 
