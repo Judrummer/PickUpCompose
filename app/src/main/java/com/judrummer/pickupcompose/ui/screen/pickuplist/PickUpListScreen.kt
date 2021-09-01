@@ -57,7 +57,6 @@ fun PickUpListScreen() {
     DisposableEffect(Unit) {
         viewModel.initialize()
         onDispose {
-            //TOOD: clean , dispose
         }
     }
 
